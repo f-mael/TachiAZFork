@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.util.system
 
+import android.app.PendingIntent
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
@@ -8,6 +9,18 @@ import android.os.Build
 import androidx.core.content.IntentCompat
 import eu.kanade.tachiyomi.R
 import java.io.Serializable
+
+val FLAG_IMMUTABLE = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    PendingIntent.FLAG_IMMUTABLE
+} else {
+    0
+}
+
+val FLAG_MUTABLE = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    PendingIntent.FLAG_MUTABLE
+} else {
+    0
+}
 
 fun Uri.toShareIntent(context: Context, type: String = "image/*", message: String? = null): Intent {
     val uri = this

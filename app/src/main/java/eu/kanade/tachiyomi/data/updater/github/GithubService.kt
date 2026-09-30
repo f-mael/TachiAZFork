@@ -26,6 +26,6 @@ interface GithubService {
         }
     }
 
-    @GET("/repos/f-mael/TachiyomiAZ/releases/latest")
+    @GET("/repos/f-mael/TachiAZFork/releases/latest")
     suspend fun getLatestVersion(): GithubRelease
 }

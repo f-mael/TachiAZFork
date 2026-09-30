@@ -7,6 +7,7 @@ import android.net.Uri
 import eu.kanade.tachiyomi.extension.util.ExtensionInstaller
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.util.storage.getUriCompat
+import eu.kanade.tachiyomi.util.system.FLAG_IMMUTABLE
 import java.io.File
 
 /**
@@ -24,7 +25,7 @@ object NotificationHandler {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                 action = MainActivity.SHORTCUT_DOWNLOADS
             }
-        return PendingIntent.getActivity(context, 0, intent, 0)
+        return PendingIntent.getActivity(context, 0, intent, FLAG_IMMUTABLE)
     }
 
     /**
@@ -43,7 +44,7 @@ object NotificationHandler {
                 setDataAndType(uri, "image/*")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
-        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
     }
 
     /**
@@ -61,6 +62,6 @@ object NotificationHandler {
                 setDataAndType(uri, ExtensionInstaller.APK_MIME)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
             }
-        return PendingIntent.getActivity(context, 0, intent, 0)
+        return PendingIntent.getActivity(context, 0, intent, FLAG_IMMUTABLE)
     }
 }

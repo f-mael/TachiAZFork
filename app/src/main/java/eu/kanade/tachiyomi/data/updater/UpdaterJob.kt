@@ -13,6 +13,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.notification.Notifications
+import eu.kanade.tachiyomi.util.system.FLAG_IMMUTABLE
 import eu.kanade.tachiyomi.util.system.notificationManager
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.TimeUnit
@@ -42,7 +43,7 @@ class UpdaterJob(private val context: Context, workerParams: WorkerParameters) :
                         addAction(
                             android.R.drawable.stat_sys_download_done,
                             context.getString(R.string.action_download),
-                            PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                            PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
                         )
                     }
                 }

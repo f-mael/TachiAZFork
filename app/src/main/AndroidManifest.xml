@@ -17,8 +17,11 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
     <!-- Lock vibrate -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
+    <!-- Modern Android permissions -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     <!-- To view extension packages in API 30+ -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
@@ -39,6 +42,7 @@
         <activity
             android:name=".ui.main.MainActivity"
             android:launchMode="singleTop"
+            android:exported="true"
             android:theme="@style/Theme.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -95,6 +99,7 @@
         <activity
             android:name=".ui.main.DeepLinkActivity"
             android:launchMode="singleTask"
+            android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
@@ -126,7 +131,8 @@
             android:theme="@style/FilePickerTheme" />
         <activity
             android:name=".ui.setting.track.AnilistLoginActivity"
-            android:label="Anilist">
+            android:label="Anilist"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -143,7 +149,8 @@
             android:configChanges="uiMode|orientation|screenSize" />
         <activity
             android:name=".ui.setting.track.ShikimoriLoginActivity"
-            android:label="Shikimori">
+            android:label="Shikimori"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -157,7 +164,8 @@
         </activity>
         <activity
             android:name=".ui.setting.track.MangaBakaLoginActivity"
-            android:label="MangaBaka">
+            android:label="MangaBaka"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -171,7 +179,8 @@
         </activity>
         <activity
             android:name=".ui.setting.track.HikkaLoginActivity"
-            android:label="Hikka">
+            android:label="Hikka"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -185,7 +194,8 @@
         </activity>
         <activity
             android:name=".ui.setting.track.BangumiLoginActivity"
-            android:label="Bangumi">
+            android:label="Bangumi"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -225,32 +235,29 @@
 
         <service
             android:name=".data.library.LibraryUpdateService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
         <service
             android:name=".data.download.DownloadService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
         <service
             android:name=".data.updater.UpdaterService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
         <service
             android:name=".data.backup.BackupCreateService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
         <service
             android:name=".data.backup.BackupRestoreService"
-            android:exported="false" />
-
-        <service android:name=".extension.util.ExtensionInstallService"
-            android:exported="false" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
             android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
-        </provider>
+            android:foregroundServiceType="dataSync" />
+
+        <service
+            android:name=".extension.util.ExtensionInstallService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
@@ -273,6 +280,7 @@
 
         <activity
             android:name="exh.ui.intercept.InterceptActivity"
+            android:exported="true"
             android:theme="@style/Theme.EHActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
