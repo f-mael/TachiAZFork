@@ -115,8 +115,8 @@ jobs:
       - name: Collect release assets
         run: |
           mkdir -p release-assets
-          cp "${{ steps.sign_android7.outputs.signedReleaseFile }}" "release-assets/TachiyomiAZ-${VERSION}-android7.apk"
-          cp "${{ steps.sign_android5.outputs.signedReleaseFile }}" "release-assets/TachiyomiAZ-${VERSION}-legacy-android5.apk"
+          cp "${{ steps.sign_android7.outputs.signedReleaseFile }}" "release-assets/TachiAZFork-${VERSION}-android7.apk"
+          cp "${{ steps.sign_android5.outputs.signedReleaseFile }}" "release-assets/TachiAZFork-${VERSION}-legacy-android5.apk"
           ls -l release-assets
 
       - name: Create GitHub release
@@ -128,5 +128,5 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "$VERSION" \
             --generate-notes \
-            release-assets/TachiyomiAZ-${VERSION}-android7.apk \
-            release-assets/TachiyomiAZ-${VERSION}-legacy-android5.apk
+            release-assets/TachiAZFork-${VERSION}-android7.apk \
+            release-assets/TachiAZFork-${VERSION}-legacy-android5.apk

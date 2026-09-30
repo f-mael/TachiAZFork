@@ -36,13 +36,13 @@ android {
     namespace "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId "eu.kanade.tachiyomi.az"
+        applicationId "eu.kanade.tachiyomi.tachiazfork"
         // Baseline; overridden per "api" product flavor (api21 lowers this to 21).
         minSdkVersion 24
         targetSdkVersion 29
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        versionCode 8910
-        versionName "v8.9.1-AZ"
+        versionCode 1
+        versionName "v1.0.0"
 
         buildConfigField "String", "COMMIT_COUNT", "\"${getCommitCount()}\""
         buildConfigField "String", "COMMIT_SHA", "\"${getGitSha()}\""

@@ -68,6 +68,17 @@
                 <data android:host="extension-store" />
             </intent-filter>
 
+            <!-- Deep link to add repos (TachiAZFork) -->
+            <intent-filter android:label="@string/action_add_repo">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="tachiazfork" />
+                <data android:host="add-repo" />
+            </intent-filter>
+
             <!--suppress AndroidDomInspection -->
             <meta-data
                 android:name="android.app.shortcuts"

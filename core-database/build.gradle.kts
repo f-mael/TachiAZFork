@@ -42,23 +42,13 @@ kotlin {
         }
     }
 
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
-
     sourceSets {
-        // Accessor form rather than `by getting`: iosMain is an intermediate source set created
-        // by the default hierarchy template, so it does not exist yet at configuration time.
         commonMain.dependencies {
             api(project(":core-model"))
             api("app.cash.sqldelight:runtime:2.0.2")
             implementation("app.cash.sqldelight:coroutines-extensions:2.0.2")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-        }
-
-        iosMain.dependencies {
-            implementation("app.cash.sqldelight:native-driver:2.0.2")
         }
     }
 }
