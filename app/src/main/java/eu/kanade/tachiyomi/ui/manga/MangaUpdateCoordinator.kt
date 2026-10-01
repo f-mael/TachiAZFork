@@ -39,7 +39,8 @@ class MangaUpdateCoordinator(
     private val manga: Manga,
     private val source: Source,
     private val db: DatabaseHelper = Injekt.get(),
-    private val coverCache: CoverCache = Injekt.get()
+    private val coverCache: CoverCache = Injekt.get(),
+    private val customMangaManager: eu.kanade.tachiyomi.data.custom.CustomMangaManager = Injekt.get()
 ) {
     /**
      * The saved outcome of one update.
@@ -139,6 +140,10 @@ class MangaUpdateCoordinator(
 
             // Already on Dispatchers.IO -- this only ever runs in [scope].
             manga.saveMangaUpdate(sManga, db, coverCache, updateMetadata, manualFetch)
+            if (customMangaManager.hasCustomInfo(manga)) {
+                customMangaManager.applyCustomInfo(manga)
+                db.insertManga(manga)
+            }
         }
     }
 }

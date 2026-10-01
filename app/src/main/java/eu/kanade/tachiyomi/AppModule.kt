@@ -43,6 +43,8 @@ class AppModule(val app: Application) : InjektModule {
 
         addSingletonFactory { CoverCache(app) }
 
+        addSingletonFactory { eu.kanade.tachiyomi.data.custom.CustomMangaManager(app) }
+
         addSingletonFactory { NetworkHelper(app) }
 
         addSingletonFactory { JavaScriptEngine(app) }

@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.manga.info
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -30,6 +31,7 @@ import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.controller.NucleusController
 import eu.kanade.tachiyomi.ui.base.controller.withFadeTransaction
 import eu.kanade.tachiyomi.ui.library.ChangeMangaCategoriesDialog
+import eu.kanade.tachiyomi.ui.library.ChangeMangaCoverDialog
 import eu.kanade.tachiyomi.ui.library.LibraryController
 import eu.kanade.tachiyomi.ui.main.MainActivity
 import eu.kanade.tachiyomi.ui.manga.MangaController
@@ -77,6 +79,7 @@ import kotlin.coroutines.CoroutineContext
 class MangaInfoController(private val fromSource: Boolean = false) :
     NucleusController<MangaInfoControllerBinding, MangaInfoPresenter>(),
     ChangeMangaCategoriesDialog.Listener,
+    ChangeMangaCoverDialog.Listener,
     CoroutineScope {
     private val preferences: PreferencesHelper by injectLazy()
 
@@ -192,6 +195,16 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             }
             .launchIn(scope)
 
+        binding.mangaCover.clicks()
+            .onEach {
+                if (presenter.hasCustomCover()) {
+                    ChangeMangaCoverDialog(this, presenter.manga).showDialog(router)
+                } else {
+                    openMangaCoverPicker(presenter.manga)
+                }
+            }
+            .launchIn(scope)
+
         binding.mangaCover.longClicks()
             .onEach {
                 copyToClipboard(view.context.getString(R.string.title), presenter.manga.title)
@@ -256,6 +269,7 @@ class MangaInfoController(private val fromSource: Boolean = false) :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_edit_manga -> EditMangaDialog(this, presenter.manga).showDialog(router)
             // EXH -->
             R.id.action_merge -> openSmartSearch()
             // EXH <--
@@ -733,4 +747,90 @@ class MangaInfoController(private val fromSource: Boolean = false) :
             sourceId == EXH_SOURCE_ID
     }
     // <-- EH
+
+    fun hasCustomCover(): Boolean = presenter.hasCustomCover()
+
+    fun hasCustomInfo(): Boolean = presenter.hasCustomInfo()
+
+    override fun openMangaCoverPicker(manga: Manga) {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "image/*"
+        }
+        startActivityForResult(
+            Intent.createChooser(intent, resources?.getString(R.string.file_select_cover)),
+            REQUEST_IMAGE_OPEN
+        )
+    }
+
+    override fun deleteMangaCover(manga: Manga) {
+        presenter.deleteCustomCover()
+    }
+
+    fun onMangaInfoEdited(title: String?, author: String?, artist: String?, description: String?) {
+        presenter.updateMangaInfo(title, author, artist, description)
+    }
+
+    fun onResetMangaInfo() {
+        presenter.resetMangaInfo()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_IMAGE_OPEN) {
+            val dataUri = data?.data
+            if (dataUri == null || resultCode != Activity.RESULT_OK) return
+            val activity = activity ?: return
+            presenter.editCover(dataUri, activity)
+        }
+    }
+
+    fun onSetCoverSuccess() {
+        activity?.toast(R.string.cover_updated)
+        refreshCover()
+    }
+
+    fun onSetCoverDeleted() {
+        activity?.toast(R.string.cover_restored)
+        refreshCover()
+    }
+
+    fun onSetCoverError(error: Throwable) {
+        activity?.toast(R.string.notification_cover_update_failed)
+        XLog.e("Failed to update cover", error)
+    }
+
+    fun onMangaInfoSaved() {
+        activity?.toast(R.string.manga_info_updated)
+    }
+
+    fun onMangaInfoReset() {
+        activity?.toast(R.string.manga_info_reset)
+        refreshCover()
+    }
+
+    fun onMangaInfoSaveError(error: Throwable) {
+        activity?.toast(error.message ?: "Error updating manga info")
+        XLog.e("Failed to update manga info", error)
+    }
+
+    private fun refreshCover() {
+        val view = view ?: return
+        val mangaThumbnail = presenter.manga.toMangaThumbnail()
+        GlideApp.with(view.context)
+            .load(mangaThumbnail)
+            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+            .centerCrop()
+            .into(binding.mangaCover)
+
+        binding.backdrop.let {
+            GlideApp.with(view.context)
+                .load(mangaThumbnail)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .centerCrop()
+                .into(it)
+        }
+    }
+
+    private companion object {
+        const val REQUEST_IMAGE_OPEN = 101
+    }
 }

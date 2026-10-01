@@ -16,6 +16,7 @@ import eu.kanade.tachiyomi.source.online.getAllImageUrlsFromPageList
 import eu.kanade.tachiyomi.util.storage.DiskUtil
 import eu.kanade.tachiyomi.util.storage.saveTo
 import eu.kanade.tachiyomi.util.system.ImageUtil
+import eu.kanade.tachiyomi.util.system.isLowRamDevice
 import eu.kanade.tachiyomi.util.system.launchNow
 import eu.kanade.tachiyomi.util.system.launchUI
 import eu.kanade.tachiyomi.util.system.withUIContext
@@ -92,9 +93,9 @@ class Downloader(
     private var downloaderJob: Job? = null
 
     /**
-     * Caps concurrent downloads at 5 sources, matching the previous flatMap(..., 5).
+     * Caps concurrent downloads (2 for low-RAM devices, 5 for normal devices).
      */
-    private val sourceSemaphore = Semaphore(5)
+    private val sourceSemaphore = Semaphore(if (context.isLowRamDevice) 2 else 5)
 
     /**
      * One mutex per source so a source's chapters download in order, as the per-source
@@ -369,8 +370,9 @@ class Downloader(
                     }
                 }
 
-                // Five workers, matching the old flatMap(..., 5) concurrency.
-                repeat(5) {
+                // Dynamic concurrency: 2 workers on low-RAM devices to avoid memory/I-O choke, 5 on normal devices.
+                val pageWorkers = if (context.isLowRamDevice) 2 else 5
+                repeat(pageWorkers) {
                     launch {
                         for (page in resolved) {
                             getOrDownloadImage(page, download, tmpDir)
@@ -479,7 +481,7 @@ class Downloader(
                 }
                 // SY <--
                 val response = source.getImage(page)
-                val file = tmpDir.createFile("$filename.tmp")
+                val file = tmpDir.createFile("$filename.tmp") ?: throw Exception("Failed to create temporary download file")
                 try {
                     response.body.source().saveTo(file.openOutputStream())
                     val extension = getImageExtension(response, file)

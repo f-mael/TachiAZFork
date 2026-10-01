@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_edit_manga"
+        android:icon="@drawable/ic_edit_24dp"
+        android:title="@string/action_edit_manga"
+        app:iconTint="?attr/colorOnPrimary"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_share"
         android:icon="@drawable/ic_share_24dp"
         android:title="@string/action_share"
@@ -27,10 +34,5 @@
         android:title="@string/action_open_in_web_view"
         app:iconTint="?attr/colorOnPrimary"
         app:showAsAction="ifRoom" />
-
-    <item
-        android:id="@+id/action_migrate"
-        android:title="@string/action_migrate"
-        app:showAsAction="never" />
 
 </menu>

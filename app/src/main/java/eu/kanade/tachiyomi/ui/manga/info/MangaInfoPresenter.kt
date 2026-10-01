@@ -1,19 +1,26 @@
 package eu.kanade.tachiyomi.ui.manga.info
 
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import eu.kanade.tachiyomi.data.cache.CoverCache
+import eu.kanade.tachiyomi.data.custom.CustomMangaInfo
+import eu.kanade.tachiyomi.data.custom.CustomMangaManager
 import eu.kanade.tachiyomi.data.database.DatabaseHelper
 import eu.kanade.tachiyomi.data.database.models.Category
 import eu.kanade.tachiyomi.data.database.models.Manga
 import eu.kanade.tachiyomi.data.database.models.MangaCategory
 import eu.kanade.tachiyomi.data.download.DownloadManager
+import eu.kanade.tachiyomi.source.LocalSource
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.ui.base.presenter.BasePresenter
 import eu.kanade.tachiyomi.ui.manga.MangaUpdateCoordinator
 import eu.kanade.tachiyomi.ui.source.SourceController
+import eu.kanade.tachiyomi.util.isLocal
 import eu.kanade.tachiyomi.util.removeCovers
 import eu.kanade.tachiyomi.util.system.withIOContext
+import eu.kanade.tachiyomi.util.updateCoverLastModified
 import exh.MERGED_SOURCE_ID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -46,6 +53,7 @@ class MangaInfoPresenter(
     private val db: DatabaseHelper = Injekt.get(),
     private val downloadManager: DownloadManager = Injekt.get(),
     private val coverCache: CoverCache = Injekt.get(),
+    private val customMangaManager: CustomMangaManager = Injekt.get(),
     private val json: Json = Injekt.get()
 ) : BasePresenter<MangaInfoController>() {
     /**
@@ -144,6 +152,92 @@ class MangaInfoPresenter(
      */
     fun deleteDownloads() {
         downloadManager.deleteManga(manga, source)
+    }
+
+    fun hasCustomCover(): Boolean = coverCache.hasCustomCover(manga)
+
+    fun hasCustomInfo(): Boolean = customMangaManager.hasCustomInfo(manga)
+
+    fun editCover(data: Uri, context: Context) {
+        presenterScope.launch {
+            try {
+                withIOContext {
+                    val mangaId = manga.id ?: db.insertManga(manga).let { manga.id!! }
+                    context.contentResolver.openInputStream(data)?.use {
+                        if (manga.isLocal()) {
+                            LocalSource.updateCover(context, manga, it)
+                        } else {
+                            coverCache.setCustomCoverToCache(manga, it)
+                        }
+                        manga.updateCoverLastModified(db)
+                    }
+                }
+                deliverToView { it.onSetCoverSuccess() }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                deliverToView { it.onSetCoverError(e) }
+            }
+        }
+    }
+
+    fun deleteCustomCover() {
+        presenterScope.launch {
+            try {
+                withIOContext {
+                    coverCache.deleteCustomCover(manga)
+                    manga.updateCoverLastModified(db)
+                }
+                deliverToView { it.onSetCoverDeleted() }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                deliverToView { it.onSetCoverError(e) }
+            }
+        }
+    }
+
+    fun updateMangaInfo(title: String?, author: String?, artist: String?, description: String?) {
+        presenterScope.launch {
+            try {
+                withIOContext {
+                    val mangaId = manga.id ?: db.insertManga(manga).let { manga.id!! }
+                    val customInfo = CustomMangaInfo(
+                        id = mangaId,
+                        title = title?.trim()?.takeIf { it.isNotEmpty() },
+                        author = author?.trim(),
+                        artist = artist?.trim(),
+                        description = description?.trim()
+                    )
+                    customMangaManager.saveCustomInfo(customInfo)
+                    customMangaManager.applyCustomInfo(manga)
+                    db.insertManga(manga)
+                }
+                deliverToView { it.onMangaInfoSaved() }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                deliverToView { it.onMangaInfoSaveError(e) }
+            }
+        }
+    }
+
+    fun resetMangaInfo() {
+        presenterScope.launch {
+            try {
+                withIOContext {
+                    customMangaManager.deleteCustomInfo(manga)
+                    coverCache.deleteCustomCover(manga)
+                    manga.updateCoverLastModified(db)
+                    updateCoordinator.awaitUpdate(force = true, updateMetadata = true)
+                }
+                deliverToView { it.onMangaInfoReset() }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                deliverToView { it.onMangaInfoSaveError(e) }
+            }
+        }
     }
 
     /**

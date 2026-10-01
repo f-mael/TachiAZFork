@@ -60,7 +60,8 @@ class LibraryUpdateService(
     val preferences: PreferencesHelper = Injekt.get(),
     val downloadManager: DownloadManager = Injekt.get(),
     val trackManager: TrackManager = Injekt.get(),
-    val coverCache: CoverCache = Injekt.get()
+    val coverCache: CoverCache = Injekt.get(),
+    val customMangaManager: eu.kanade.tachiyomi.data.custom.CustomMangaManager = Injekt.get()
 ) : Service() {
     /**
      * Wake lock that will be held until the service is destroyed.
@@ -377,6 +378,10 @@ class LibraryUpdateService(
             )
         try {
             manga.saveMangaUpdate(mangaUpdate.manga, db, coverCache, updateMetadata)
+            if (customMangaManager.hasCustomInfo(manga)) {
+                customMangaManager.applyCustomInfo(manga)
+                db.insertManga(manga)
+            }
         } catch (e: Throwable) {
             Timber.e(e)
         }
@@ -401,6 +406,10 @@ class LibraryUpdateService(
                         fetchChapters = false
                     )
                 manga.saveMangaUpdate(update.manga, db, coverCache, updateMetadata = true)
+                if (customMangaManager.hasCustomInfo(manga)) {
+                    customMangaManager.applyCustomInfo(manga)
+                    db.insertManga(manga)
+                }
                 // Sources may hand back chapters even though they weren't asked for.
                 syncChaptersFromUpdate(db, update, manga, source)
             } catch (e: Exception) {

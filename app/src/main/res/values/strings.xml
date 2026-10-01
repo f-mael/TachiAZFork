@@ -895,4 +895,13 @@ z
         <item quantity="one">There is 1 missing chapter</item>
         <item quantity="other">There are %d missing chapters</item>
     </plurals>
+
+    <!-- Local Manga Editing -->
+    <string name="action_edit_manga">Edit information</string>
+    <string name="action_reset_cover">Restore cover</string>
+    <string name="action_reset_info">Reset to source</string>
+    <string name="action_save">Save</string>
+    <string name="manga_info_updated">Manga updated</string>
+    <string name="manga_info_reset">Manga restored from source</string>
+    <string name="cover_restored">Original cover restored</string>
 </resources>
