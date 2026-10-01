@@ -10,25 +10,5 @@ A fast, lightweight Android reader fork that preserves the classic **Material De
 - **EH / ExH Features**: Integrated gallery features, tags, and specialized cookie authentication.
 - **Trackers & Recommendations**: AniList and MyAnimeList integrations.
 
-## Versioning
-This fork maintains clean Semantic Versioning starting from **v1.0.0** (versionCode `1`).
-
-## Compiling & Building
-
-### In GitHub Actions (Recommended)
-This repository includes configured CI/CD workflows:
-- `.github/workflows/build.yml`: Automatically builds signed APK artifacts on pushes to `master`.
-- `.github/workflows/release.yml`: Automatically publishes releases and APK assets when the `versionName` is bumped.
-
-### Locally on your machine
-Prerequisites:
-- JDK 21 (Temurin / OpenJDK 21)
-- Android SDK (API 34/35)
-
-Run in terminal:
-```bash
-./gradlew assembleStandardDebug
-```
-
 ## License
 Licensed under Apache-2.0.
