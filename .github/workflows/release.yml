@@ -68,26 +68,42 @@ jobs:
         uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5.0.1
 
       - name: Write google-services.json
+        env:
+          GOOGLE_SERVICES_TEXT: ${{ secrets.GOOGLE_SERVICES_TEXT }}
         run: |
-          if [ -n "${{ secrets.GOOGLE_SERVICES_TEXT }}" ]; then
-            echo '${{ secrets.GOOGLE_SERVICES_TEXT }}' > app/google-services.json
+          if [ -n "$GOOGLE_SERVICES_TEXT" ]; then
+            echo "$GOOGLE_SERVICES_TEXT" > app/google-services.json
           else
             echo '{"project_info":{"project_number":"1234567890","project_id":"tachiazfork-mock","storage_bucket":"tachiazfork-mock.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1234567890:android:mockappiddummystring","android_client_info":{"package_name":"eu.kanade.tachiyomi.tachiazfork"}},"oauth_client":[],"api_key":[{"current_key":"fake_api_key_for_mock_build_only"}],"services":{"analytics_service":{"status":1},"appinvite_service":{"status":1,"other_platform_oauth_client":[]},"ads_service":{"status":1}}}],"configuration_version":"1"}' > app/google-services.json
           fi
 
+      - name: Check for signing key
+        id: check_signing
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          if [ -n "$SIGNING_KEY" ]; then
+            echo "has_signing_key=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_signing_key=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Builds both API-level variants from the same code:
+      #   standardApi21Release -> Android 5/6 (minSdk 21)
+      #   standardApi24Release -> Android 7+  (minSdk 24)
       - name: Build APKs
         uses: gradle/gradle-command-action@v2
         with:
           arguments: assembleStandardApi21Release assembleStandardApi24Release
 
       - name: Setup Android SDK
-        if: ${{ secrets.SIGNING_KEY != '' }}
+        if: steps.check_signing.outputs.has_signing_key == 'true'
         run: |
           yes | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager "build-tools;29.0.3" || true
 
       - name: Sign Android 5/6 (api21) release
         id: sign_android5
-        if: ${{ secrets.SIGNING_KEY != '' }}
+        if: steps.check_signing.outputs.has_signing_key == 'true'
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: app/build/outputs/apk/standardApi21/release
@@ -98,7 +114,7 @@ jobs:
 
       - name: Sign Android 7+ (api24) release
         id: sign_android7
-        if: ${{ secrets.SIGNING_KEY != '' }}
+        if: steps.check_signing.outputs.has_signing_key == 'true'
         uses: r0adkll/sign-android-release@v1
         with:
           releaseDirectory: app/build/outputs/apk/standardApi24/release
@@ -110,13 +126,15 @@ jobs:
       - name: Collect release assets
         run: |
           mkdir -p release-assets
-          if [ -n "${{ steps.sign_android7.outputs.signedReleaseFile }}" ] && [ -f "${{ steps.sign_android7.outputs.signedReleaseFile }}" ]; then
-            cp "${{ steps.sign_android7.outputs.signedReleaseFile }}" "release-assets/TachiAZFork-${VERSION}-android7.apk"
+          SIGNED_7="${{ steps.sign_android7.outputs.signedReleaseFile }}"
+          SIGNED_5="${{ steps.sign_android5.outputs.signedReleaseFile }}"
+          if [ -n "$SIGNED_7" ] && [ -f "$SIGNED_7" ]; then
+            cp "$SIGNED_7" "release-assets/TachiAZFork-${VERSION}-android7.apk"
           else
             cp app/build/outputs/apk/standardApi24/release/*.apk "release-assets/TachiAZFork-${VERSION}-android7.apk"
           fi
-          if [ -n "${{ steps.sign_android5.outputs.signedReleaseFile }}" ] && [ -f "${{ steps.sign_android5.outputs.signedReleaseFile }}" ]; then
-            cp "${{ steps.sign_android5.outputs.signedReleaseFile }}" "release-assets/TachiAZFork-${VERSION}-legacy-android5.apk"
+          if [ -n "$SIGNED_5" ] && [ -f "$SIGNED_5" ]; then
+            cp "$SIGNED_5" "release-assets/TachiAZFork-${VERSION}-legacy-android5.apk"
           else
             cp app/build/outputs/apk/standardApi21/release/*.apk "release-assets/TachiAZFork-${VERSION}-legacy-android5.apk"
           fi
