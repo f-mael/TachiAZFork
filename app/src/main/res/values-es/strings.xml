@@ -578,7 +578,6 @@
     <string name="action_edit_manga">Editar información</string>
     <string name="action_reset_cover">Restaurar portada</string>
     <string name="action_reset_info">Restaurar datos de la fuente</string>
-    <string name="action_save">Guardar</string>
     <string name="manga_info_updated">Información actualizada</string>
     <string name="manga_info_reset">Información restaurada desde la fuente</string>
     <string name="cover_restored">Portada original restaurada</string>
