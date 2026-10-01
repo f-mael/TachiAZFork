@@ -470,3 +470,10 @@ if (getGradle().getStartParameter().getTaskRequests().toString().contains("Stand
     //apply plugin: 'io.fabric'
     apply plugin: 'com.google.firebase.crashlytics'
 }
+
+afterEvaluate {
+    tasks.matching { it.name.startsWith("uploadCrashlytics") }.configureEach {
+        enabled = false
+    }
+}
+

@@ -94,7 +94,7 @@ jobs:
       - name: Build APKs
         uses: gradle/gradle-command-action@v2
         with:
-          arguments: assembleStandardApi21Release assembleStandardApi24Release
+          arguments: assembleStandardApi21Release assembleStandardApi24Release -x uploadCrashlyticsMappingFileStandardApi21Release -x uploadCrashlyticsMappingFileStandardApi24Release
 
       - name: Setup Android SDK
         if: steps.check_signing.outputs.has_signing_key == 'true'
