@@ -10,13 +10,17 @@ import com.bumptech.glide.Registry
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
+import com.bumptech.glide.load.engine.cache.LruResourceCache
+import com.bumptech.glide.load.engine.cache.MemorySizeCalculator
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.resource.bitmap.ExifInterfaceImageHeaderParser
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.RequestOptions
 import eu.kanade.tachiyomi.network.NetworkHelper
+import eu.kanade.tachiyomi.util.system.isLowRamDevice
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.io.InputStream
@@ -31,12 +35,23 @@ class TachiGlideModule : AppGlideModule() {
         context: Context,
         builder: GlideBuilder
     ) {
-        builder.setDiskCache(InternalCacheDiskCacheFactory(context, 50 * 1024 * 1024))
+        val isLowRam = context.isLowRamDevice
+        if (isLowRam) {
+            val calculator = MemorySizeCalculator.Builder(context)
+                .setMemoryCacheScreens(1.0f)
+                .setBitmapPoolScreens(1.0f)
+                .build()
+            builder.setMemoryCache(LruResourceCache(calculator.memoryCacheSize.toLong() / 2))
+            builder.setBitmapPool(LruBitmapPool(calculator.bitmapPoolSize.toLong() / 2))
+            builder.setDiskCache(InternalCacheDiskCacheFactory(context, 25 * 1024 * 1024))
+        } else {
+            builder.setDiskCache(InternalCacheDiskCacheFactory(context, 50 * 1024 * 1024))
+            builder.setDefaultTransitionOptions(
+                Drawable::class.java,
+                DrawableTransitionOptions.withCrossFade()
+            )
+        }
         builder.setDefaultRequestOptions(RequestOptions().format(DecodeFormat.PREFER_RGB_565))
-        builder.setDefaultTransitionOptions(
-            Drawable::class.java,
-            DrawableTransitionOptions.withCrossFade()
-        )
     }
 
     override fun registerComponents(

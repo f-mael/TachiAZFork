@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Build
 import android.os.Environment
@@ -12,6 +13,8 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.multidex.MultiDex
+import com.bumptech.glide.Glide
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.elvishew.xlog.LogConfiguration
 import com.elvishew.xlog.LogLevel
 import com.elvishew.xlog.XLog
@@ -96,7 +99,28 @@ open class App : Application(), LifecycleObserver {
 
         LocaleHelper.updateConfiguration(this, resources.configuration)
 
+        // Low-memory optimization: use 16-bit RGB_565 by default to cut reader memory usage by 50%
+        SubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.RGB_565)
+
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        try {
+            Glide.get(this).trimMemory(level)
+        } catch (e: Throwable) {
+            // Ignore if Glide is not yet initialized
+        }
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        try {
+            Glide.get(this).clearMemory()
+        } catch (e: Throwable) {
+            // Ignore if Glide is not yet initialized
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)

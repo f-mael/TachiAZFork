@@ -58,7 +58,11 @@ class HttpPageLoader(
      */
     private val scope = CoroutineScope(SupervisorJob())
 
-    private val preloadSize = prefs.eh_preload_size().get()
+    private val preloadSize = if (prefs.isLowRamDevice) {
+        prefs.eh_preload_size().get().coerceAtMost(2)
+    } else {
+        prefs.eh_preload_size().get()
+    }
 
     /**
      * One dedicated thread per worker.
@@ -70,7 +74,7 @@ class HttpPageLoader(
      * executors also means [recycle] can actually interrupt the parked threads.
      */
     private val workerExecutors =
-        List(prefs.eh_readerThreads().get()) { index ->
+        List(if (prefs.isLowRamDevice) 1 else prefs.eh_readerThreads().get()) { index ->
             Executors.newSingleThreadExecutor { runnable ->
                 Thread(runnable, "HttpPageLoader#$index").apply { isDaemon = true }
             }

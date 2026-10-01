@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ChapterTransition
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.model.ViewerChapters
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
+import eu.kanade.tachiyomi.util.system.isLowRamDevice
 import eu.kanade.tachiyomi.util.view.gone
 import eu.kanade.tachiyomi.util.view.visible
 import kotlinx.coroutines.CoroutineScope
@@ -35,7 +36,11 @@ class WebtoonViewer(
     /**
      * Recycler view used by this viewer.
      */
-    val recycler = WebtoonRecyclerView(activity)
+    val recycler = WebtoonRecyclerView(activity).apply {
+        if (activity.isLowRamDevice) {
+            setItemViewCacheSize(1)
+        }
+    }
 
     /**
      * Frame containing the recycler view.

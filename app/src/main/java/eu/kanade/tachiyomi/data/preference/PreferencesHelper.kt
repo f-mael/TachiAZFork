@@ -20,6 +20,7 @@ import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
+import eu.kanade.tachiyomi.util.system.isLowRamDevice
 import eu.kanade.tachiyomi.data.preference.PreferenceKeys as Keys
 import eu.kanade.tachiyomi.data.preference.PreferenceValues as Values
 
@@ -46,6 +47,9 @@ class PreferencesHelper(val context: Context) : DownloadPreferences {
 
     override val removeAfterReadSlots: Int
         get() = removeAfterReadSlots()
+
+    val isLowRamDevice: Boolean
+        get() = context.isLowRamDevice
 
     private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
@@ -493,7 +497,7 @@ class PreferencesHelper(val context: Context) : DownloadPreferences {
 
     fun eh_expandFilters() = flowPrefs.getBoolean(Keys.eh_expandFilters, false)
 
-    fun eh_readerThreads() = flowPrefs.getInt(Keys.eh_readerThreads, 2)
+    fun eh_readerThreads() = flowPrefs.getInt(Keys.eh_readerThreads, if (isLowRamDevice) 1 else 2)
 
     fun eh_readerInstantRetry() = flowPrefs.getBoolean(Keys.eh_readerInstantRetry, true)
 
@@ -527,7 +531,7 @@ class PreferencesHelper(val context: Context) : DownloadPreferences {
 
     fun eh_library_corner_radius() = flowPrefs.getInt(Keys.eh_library_rounded_corners, 4)
 
-    fun eh_preload_size() = flowPrefs.getInt(Keys.eh_preload_size, 4)
+    fun eh_preload_size() = flowPrefs.getInt(Keys.eh_preload_size, if (isLowRamDevice) 2 else 4)
 
     fun eh_useAutoWebtoon() = flowPrefs.getBoolean(Keys.eh_use_auto_webtoon, true)
 

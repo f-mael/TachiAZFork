@@ -320,3 +320,10 @@ fun Context.isOnline(): Boolean {
         return networkInfo.isConnected()
     }
 }
+
+val Context.isLowRamDevice: Boolean
+    get() {
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+        return am?.isLowRamDevice == true
+    }
+
