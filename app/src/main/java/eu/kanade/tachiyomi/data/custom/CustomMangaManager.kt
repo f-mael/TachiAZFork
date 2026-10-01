@@ -39,7 +39,7 @@ class CustomMangaManager(
     }
 
     fun getCustomInfo(manga: Manga): CustomMangaInfo? {
-        val id = manga.id ?: return false
+        val id = manga.id ?: return null
         val file = getCustomInfoFile(id)
         if (!file.exists()) return null
         return try {

@@ -54,7 +54,7 @@ class EditMangaDialog(bundle: Bundle? = null) : DialogController(bundle) {
 
         binding.btnChangeCover.setOnClickListener {
             target?.openMangaCoverPicker(manga)
-            dismissDialog()
+            dialog?.dismiss()
         }
 
         binding.btnResetCover.setOnClickListener {
